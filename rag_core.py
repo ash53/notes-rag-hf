@@ -91,7 +91,7 @@ def simple_chunk(text: str, max_chars: int = 1200, overlap: int = 150):
 # --------------------------
 class EmbeddingBackend:
     def __init__(self, model_name: str = EMB_MODEL_NAME):
-        self.model = SentenceTransformer(model_name)
+        self.model = SentenceTransformer(model_name, device="cpu")
 
     def encode(self, texts: List[str]):
         return self.model.encode(
