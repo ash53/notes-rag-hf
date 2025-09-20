@@ -11,7 +11,7 @@ DATA_DIR.mkdir(exist_ok=True)
 STORAGE_DIR.mkdir(exist_ok=True)
 
 st.title("🗂️ Personal Notes Q&A (RAG)")
-st.caption("Upload notes → ingest → ask questions with citations (Ollama only).")
+st.caption("Upload notes → ingest → ask questions with citations.")
 
 # --- File uploader ---
 uploaded_files = st.file_uploader(
@@ -26,6 +26,7 @@ if uploaded_files:
         with open(file_path, "wb") as f:
             f.write(uploaded.getbuffer())
     st.success(f"✅ Uploaded {len(uploaded_files)} file(s).")
+    
 
     if st.button("Ingest Files"):
         with st.spinner("Building index..."):
@@ -34,16 +35,23 @@ if uploaded_files:
 
 # --- Q&A interface ---
 query = st.text_input("Ask a question about your notes:")
+
+# Either Enter (query filled) or pressing button will trigger
 go = st.button("Answer")
 
-if go and query.strip():
-    with st.spinner("Thinking with Ollama..."):
-        answer, ctx = answer_query(query.strip(), STORAGE_DIR, use_openai=False)
+if (go or query.strip()) and query.strip():
+    with st.spinner("Generating answer..."):
+        answer, ctx = answer_query(query.strip(), STORAGE_DIR)
+
     st.markdown("### Answer")
     st.write(answer)
 
     st.markdown("### Context & Citations")
     for c in ctx:
         with st.container(border=True):
-            st.markdown(f"**[{c['rank']}] {c['source']} — {c['locator']}**  \nSimilarity: `{c['score']:.3f}`")
+            st.markdown(
+                f"**[{c['rank']}] {c['source']} — {c['locator']}**  \n"
+                f"Similarity: `{c['score']:.3f}`"
+            )
             st.write(c["text"][:1200] + ("..." if len(c["text"]) > 1200 else ""))
+
